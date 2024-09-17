@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cow Location Tracker</title>
+    <title>ConnectFarm Localização</title>
     <link rel="stylesheet" type="text/css" href="./style.css">
 </head>
 
@@ -12,12 +12,15 @@
     <div id="container">
         <h1>Terreno do Seu Mário</h1>
         <div id="square">
-            <div id="cow1" class="cow" style="left: 140px; top: 140px;">1</div>
-            <div id="cow2" class="cow" style="left: 60px; top: 60px;">2</div>
+            <div id="cow14" class="cow" style="left: 140px; top: 140px;">1</div>
+            <div id="cow121" class="cow" style="left: 60px; top: 60px;">2</div>
         </div>
         <div id="buttons">
-            <button id="pauseBtn">Pausar</button>
-            <button id="resumeBtn" style="display: none;">Continuar</button>
+            <button id="pauseBtn" style="display: none;">Pausar</button>
+            <button id="resumeBtn">Continuar</button>
+        </div>
+        <div id="progress-container">
+            <div id="progress-bar"></div>
         </div>
     </div>
 
@@ -25,8 +28,11 @@
         const square = document.getElementById('square');
         const pauseBtn = document.getElementById('pauseBtn');
         const resumeBtn = document.getElementById('resumeBtn');
+        const progressBar = document.getElementById('progress-bar');
 
-        let sending = true; // Controle de envio
+        let sending = false;
+        let intervalId;
+        const intervalDuration = 10000; // 10 seconds
 
         function makeDraggable(cow) {
             let offsetX, offsetY, isDragging = false;
@@ -44,7 +50,6 @@
                     let x = event.clientX - squareRect.left - offsetX;
                     let y = event.clientY - squareRect.top - offsetY;
 
-                    // Limitar a movimentação dentro do quadrado
                     x = Math.max(0, Math.min(x, squareRect.width - cow.offsetWidth));
                     y = Math.max(0, Math.min(y, squareRect.height - cow.offsetHeight));
 
@@ -61,16 +66,18 @@
 
         function startMoving() {
             document.querySelectorAll('.cow').forEach(makeDraggable);
-
-            setInterval(() => {
+            sending = true;
+            updateProgressBar();
+            intervalId = setInterval(() => {
                 if (sending) {
                     sendLocation();
                 }
-            }, 10000);
+            }, intervalDuration);
         }
 
         function pause() {
             sending = false;
+            clearInterval(intervalId);
             document.querySelectorAll('.cow').forEach(cow => {
                 cow.style.cursor = 'default';
             });
@@ -85,12 +92,20 @@
             resumeBtn.style.display = 'none';
         }
 
+        function convertUTCToTimezone(utcDate, timezoneOffsetMinutes) {
+            const date = new Date(utcDate);
+            const localDate = new Date(date.getTime() + (timezoneOffsetMinutes * 60 * 1000));
+            return localDate.toISOString();
+        }
+
         function sendLocation() {
             document.querySelectorAll('.cow').forEach(cow => {
                 const x = parseFloat(cow.style.left);
                 const y = parseFloat(cow.style.top);
-                const cowId = cow.id;
-                const timestamp = new Date().toISOString();
+                const cowId = Number((cow.id).replace("cow", ""));
+                const utcTimestamp = new Date().toISOString();
+                const timezoneOffsetMinutes = -3 * 60;
+                const localTimestamp = convertUTCToTimezone(utcTimestamp, timezoneOffsetMinutes);
 
                 fetch('/api/locations', {
                     method: 'POST',
@@ -98,10 +113,11 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
+                        farmId: "f721300f-f6a9-4d70-b343-82487d070be1",
                         cowId: cowId,
                         latitude: x,
                         longitude: y,
-                        timestamp: timestamp
+                        timestamp: localTimestamp
                     }),
                 }).then(response => {
                     if (!response.ok) {
@@ -113,10 +129,28 @@
             });
         }
 
+        function updateProgressBar() {
+            const progressBar = document.getElementById('progress-bar');
+            let timeLeft = intervalDuration / 1000; // Convert to seconds
+
+            function update() {
+                timeLeft -= 1;
+                const percentage = (timeLeft / (intervalDuration / 1000)) * 100;
+                progressBar.style.width = `${percentage}%`;
+
+                if (timeLeft <= 0) {
+                    timeLeft = intervalDuration / 1000; // Reset time
+                    progressBar.style.width = '100%';
+                }
+            }
+
+            update();
+            setInterval(update, 1000);
+        }
+
         pauseBtn.addEventListener('click', pause);
         resumeBtn.addEventListener('click', resume);
 
-        // Iniciar envio de localização
         startMoving();
     </script>
 </body>
