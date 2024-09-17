@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cow Location Tracker</title>
+    <style>
+        #circle {
+            width: 300px;
+            height: 300px;
+            border: 2px solid black;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cow {
+            width: 20px;
+            height: 20px;
+            background-color: brown;
+            border-radius: 50%;
+            position: absolute;
+            cursor: grab;
+        }
+
+        .cow:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Move the cow in the circle</h1>
+    <div id="circle">
+        <div id="cow1" class="cow" style="left: 140px; top: 140px;"></div>
+        <div id="cow2" class="cow" style="left: 60px; top: 60px;"></div>
+    </div>
+
+    <button id="pauseBtn">Pause</button>
+    <button id="resumeBtn" style="display: none;">Resume</button>
+
+    <script>
+        const circle = document.getElementById('circle');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resumeBtn = document.getElementById('resumeBtn');
+
+        let sending = true; // Controle de envio
+
+        function makeDraggable(cow) {
+            let offsetX, offsetY, isDragging = false;
+
+            cow.addEventListener('mousedown', (event) => {
+                isDragging = true;
+                offsetX = event.clientX - cow.getBoundingClientRect().left;
+                offsetY = event.clientY - cow.getBoundingClientRect().top;
+                cow.style.cursor = 'grabbing';
+            });
+
+            document.addEventListener('mousemove', (event) => {
+                if (isDragging) {
+                    const circleRect = circle.getBoundingClientRect();
+                    let x = event.clientX - circleRect.left - offsetX;
+                    let y = event.clientY - circleRect.top - offsetY;
+
+                    const radius = circleRect.width / 2;
+                    const distance = Math.sqrt((x - radius) ** 2 + (y - radius) ** 2);
+
+                    if (distance < radius) {
+                        cow.style.left = `${x}px`;
+                        cow.style.top = `${y}px`;
+                    }
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                cow.style.cursor = 'grab';
+            });
+        }
+
+        function startMoving() {
+            document.querySelectorAll('.cow').forEach(makeDraggable);
+
+            setInterval(() => {
+                if (sending) {
+                    sendLocation();
+                }
+            }, 10000);
+        }
+
+        function pause() {
+            sending = false;
+            document.querySelectorAll('.cow').forEach(cow => {
+                cow.style.cursor = 'default';
+            });
+            pauseBtn.style.display = 'none';
+            resumeBtn.style.display = 'block';
+        }
+
+        function resume() {
+            sending = true;
+            startMoving();
+            pauseBtn.style.display = 'block';
+            resumeBtn.style.display = 'none';
+        }
+
+        function sendLocation() {
+            document.querySelectorAll('.cow').forEach(cow => {
+                const x = parseFloat(cow.style.left);
+                const y = parseFloat(cow.style.top);
+                const cowId = cow.id;
+                const timestamp = new Date().toISOString();
+
+                fetch('/api/locations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        cowId: cowId,
+                        latitude: x,
+                        longitude: y,
+                        timestamp: timestamp
+                    }),
+                }).then(response => {
+                    if (!response.ok) {
+                        console.error('Failed to send location');
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        }
+
+        pauseBtn.addEventListener('click', pause);
+        resumeBtn.addEventListener('click', resume);
+
+        // Iniciar envio de localização
+        startMoving();
+    </script>
+</body>
+
+</html>
