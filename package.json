@@ -1,0 +1,17 @@
+{
+  "name": "connectfarm-localization",
+  "version": "1.0.0",
+  "description": "Localization system for Connectfarm",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "ts-node ./src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Gabriel Siqueira",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.5.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2"
+  }
+}
