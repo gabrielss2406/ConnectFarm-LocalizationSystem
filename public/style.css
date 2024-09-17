@@ -1,0 +1,48 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f5f5f5;
+    font-family: Arial, sans-serif;
+}
+
+#container {
+    text-align: center;
+}
+
+#square {
+    width: 500px;
+    height: 500px;
+    border: 2px solid black;
+    position: relative;
+    margin: 0 auto;
+    background-color: #fff;
+    color: white;
+}
+
+.cow {
+    width: 20px;
+    height: 20px;
+    background-color: brown;
+    border-radius: 50%;
+    position: absolute;
+    cursor: grab;
+}
+
+.cow:active {
+    cursor: grabbing;
+}
+
+#buttons {
+    margin-top: 20px;
+}
+
+button {
+    margin: 0 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    display: block;
+}

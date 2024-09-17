@@ -5,43 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cow Location Tracker</title>
-    <style>
-        #circle {
-            width: 300px;
-            height: 300px;
-            border: 2px solid black;
-            border-radius: 50%;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .cow {
-            width: 20px;
-            height: 20px;
-            background-color: brown;
-            border-radius: 50%;
-            position: absolute;
-            cursor: grab;
-        }
-
-        .cow:active {
-            cursor: grabbing;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="./style.css">
 </head>
 
 <body>
-    <h1>Move the cow in the circle</h1>
-    <div id="circle">
-        <div id="cow1" class="cow" style="left: 140px; top: 140px;"></div>
-        <div id="cow2" class="cow" style="left: 60px; top: 60px;"></div>
+    <div id="container">
+        <h1>Terreno do Seu Mário</h1>
+        <div id="square">
+            <div id="cow1" class="cow" style="left: 140px; top: 140px;">1</div>
+            <div id="cow2" class="cow" style="left: 60px; top: 60px;">2</div>
+        </div>
+        <div id="buttons">
+            <button id="pauseBtn">Pausar</button>
+            <button id="resumeBtn" style="display: none;">Continuar</button>
+        </div>
     </div>
 
-    <button id="pauseBtn">Pause</button>
-    <button id="resumeBtn" style="display: none;">Resume</button>
-
     <script>
-        const circle = document.getElementById('circle');
+        const square = document.getElementById('square');
         const pauseBtn = document.getElementById('pauseBtn');
         const resumeBtn = document.getElementById('resumeBtn');
 
@@ -59,17 +40,16 @@
 
             document.addEventListener('mousemove', (event) => {
                 if (isDragging) {
-                    const circleRect = circle.getBoundingClientRect();
-                    let x = event.clientX - circleRect.left - offsetX;
-                    let y = event.clientY - circleRect.top - offsetY;
+                    const squareRect = square.getBoundingClientRect();
+                    let x = event.clientX - squareRect.left - offsetX;
+                    let y = event.clientY - squareRect.top - offsetY;
 
-                    const radius = circleRect.width / 2;
-                    const distance = Math.sqrt((x - radius) ** 2 + (y - radius) ** 2);
+                    // Limitar a movimentação dentro do quadrado
+                    x = Math.max(0, Math.min(x, squareRect.width - cow.offsetWidth));
+                    y = Math.max(0, Math.min(y, squareRect.height - cow.offsetHeight));
 
-                    if (distance < radius) {
-                        cow.style.left = `${x}px`;
-                        cow.style.top = `${y}px`;
-                    }
+                    cow.style.left = `${x}px`;
+                    cow.style.top = `${y}px`;
                 }
             });
 
