@@ -32,7 +32,17 @@
 
         let sending = false;
         let intervalId;
+        let progressIntervalId;
         const intervalDuration = 10000; // 10 seconds
+        const updateInterval = 100; // Update progress every 100ms
+
+        const terrainCenterLat = -22.25933; // Latitude central
+        const terrainCenterLng = -45.69096; // Longitude central
+        const terrainWidth = 600; // Pixels
+        const terrainHeight = 600; // Pixels
+
+        const widthInMeters = 707; // Tamanho do terreno em metros
+        const heightInMeters = 707; // Tamanho do terreno em metros
 
         function makeDraggable(cow) {
             let offsetX, offsetY, isDragging = false;
@@ -47,6 +57,7 @@
             document.addEventListener('mousemove', (event) => {
                 if (isDragging) {
                     const squareRect = square.getBoundingClientRect();
+
                     let x = event.clientX - squareRect.left - offsetX;
                     let y = event.clientY - squareRect.top - offsetY;
 
@@ -66,7 +77,6 @@
 
         function startMoving() {
             document.querySelectorAll('.cow').forEach(makeDraggable);
-            sending = true;
             updateProgressBar();
             intervalId = setInterval(() => {
                 if (sending) {
@@ -78,6 +88,7 @@
         function pause() {
             sending = false;
             clearInterval(intervalId);
+            clearInterval(progressIntervalId);
             document.querySelectorAll('.cow').forEach(cow => {
                 cow.style.cursor = 'default';
             });
@@ -90,6 +101,25 @@
             startMoving();
             pauseBtn.style.display = 'block';
             resumeBtn.style.display = 'none';
+        }
+
+        function convertPixelsToLatLng(x, y) {
+            const metersPerPixelX = widthInMeters / 500;
+            const metersPerPixelY = heightInMeters / 500;
+
+            const offsetX = x - (terrainWidth / 2);
+            const offsetY = (terrainHeight / 2) - y;
+
+            console.log("offsetX: ", offsetX)
+            console.log("offsetY: ", offsetY)
+
+            const latOffset = (offsetY * metersPerPixelY) / 111000; // Approximate conversion from meters to degrees
+            const lngOffset = (offsetX * metersPerPixelX) / (111000 * Math.cos(terrainCenterLat * Math.PI / 180)); // Approximate conversion from meters to degrees
+
+            return {
+                lat: terrainCenterLat + latOffset,
+                lng: terrainCenterLng + lngOffset
+            };
         }
 
         function convertUTCToTimezone(utcDate, timezoneOffsetMinutes) {
@@ -106,6 +136,8 @@
                 const utcTimestamp = new Date().toISOString();
                 const timezoneOffsetMinutes = -3 * 60;
                 const localTimestamp = convertUTCToTimezone(utcTimestamp, timezoneOffsetMinutes);
+                console.log(cow)
+                const { lat, lng } = convertPixelsToLatLng(x, y);
 
                 fetch('/api/locations', {
                     method: 'POST',
@@ -115,8 +147,8 @@
                     body: JSON.stringify({
                         farmId: "f721300f-f6a9-4d70-b343-82487d070be1",
                         cowId: cowId,
-                        latitude: x,
-                        longitude: y,
+                        latitude: lat,
+                        longitude: lng,
                         timestamp: localTimestamp
                     }),
                 }).then(response => {
@@ -130,22 +162,23 @@
         }
 
         function updateProgressBar() {
-            const progressBar = document.getElementById('progress-bar');
             let timeLeft = intervalDuration / 1000; // Convert to seconds
+            progressBar.style.width = '100%'; // Start with full width
 
             function update() {
-                timeLeft -= 1;
-                const percentage = (timeLeft / (intervalDuration / 1000)) * 100;
-                progressBar.style.width = `${percentage}%`;
+                if (sending) {
+                    timeLeft -= updateInterval / 1000;
+                    const percentage = (timeLeft / (intervalDuration / 1000)) * 100;
+                    progressBar.style.width = `${percentage}%`;
 
-                if (timeLeft <= 0) {
-                    timeLeft = intervalDuration / 1000; // Reset time
-                    progressBar.style.width = '100%';
+                    if (timeLeft <= 0) {
+                        timeLeft = intervalDuration / 1000; // Reset time
+                        progressBar.style.width = '100%';
+                    }
                 }
             }
 
-            update();
-            setInterval(update, 1000);
+            progressIntervalId = setInterval(update, updateInterval);
         }
 
         pauseBtn.addEventListener('click', pause);
