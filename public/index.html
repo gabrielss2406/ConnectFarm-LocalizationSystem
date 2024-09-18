@@ -110,9 +110,6 @@
             const offsetX = x - (terrainWidth / 2);
             const offsetY = (terrainHeight / 2) - y;
 
-            console.log("offsetX: ", offsetX)
-            console.log("offsetY: ", offsetY)
-
             const latOffset = (offsetY * metersPerPixelY) / 111000; // Approximate conversion from meters to degrees
             const lngOffset = (offsetX * metersPerPixelX) / (111000 * Math.cos(terrainCenterLat * Math.PI / 180)); // Approximate conversion from meters to degrees
 
@@ -136,7 +133,6 @@
                 const utcTimestamp = new Date().toISOString();
                 const timezoneOffsetMinutes = -3 * 60;
                 const localTimestamp = convertUTCToTimezone(utcTimestamp, timezoneOffsetMinutes);
-                console.log(cow)
                 const { lat, lng } = convertPixelsToLatLng(x, y);
 
                 fetch('/api/locations', {
@@ -152,6 +148,7 @@
                         timestamp: localTimestamp
                     }),
                 }).then(response => {
+                    console.log(response)
                     if (!response.ok) {
                         console.error('Failed to send location');
                     }
