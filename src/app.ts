@@ -9,7 +9,7 @@ dotenv.config()
 
 const app = express();
 
-mongoose.connect(process.env.MONGO_URI as string, { appName: "ConnectFarm" });
+mongoose.connect("mongodb+srv://api-user:FFNdCS7lPY8tRYFN@connectfarm.pmcal9p.mongodb.net/ConnectFarm?retryWrites=true&w=majority&appName=ConnectFarm", { appName: "ConnectFarm" });
 
 app.use(cors());
 app.use(express.json());
