@@ -12,8 +12,12 @@
     <div id="container">
         <h1>Terreno do Seu Mário</h1>
         <div id="square">
-            <div id="cow14" class="cow" style="left: 140px; top: 140px;">1</div>
-            <div id="cow121" class="cow" style="left: 60px; top: 60px;">2</div>
+            <div id="cow14" class="cow" style="left: 140px; top: 140px;">
+                <span class="cow-number">14</span>
+            </div>
+            <div id="cow121" class="cow" style="left: 70px; top: 70px;">
+                <span class="cow-number">121</span>
+            </div>
         </div>
         <div id="buttons">
             <button id="pauseBtn" style="display: none;">Pausar</button>
@@ -159,22 +163,26 @@
         }
 
         function updateProgressBar() {
-            let timeLeft = intervalDuration / 1000; // Convert to seconds
-            progressBar.style.width = '100%'; // Start with full width
+            let timeLeft = intervalDuration; // Tempo restante em milissegundos
+            progressBar.style.width = '100%'; // Começa com largura cheia
 
             function update() {
                 if (sending) {
-                    timeLeft -= updateInterval / 1000;
-                    const percentage = (timeLeft / (intervalDuration / 1000)) * 100;
-                    progressBar.style.width = `${percentage}%`;
+                    timeLeft -= updateInterval;
 
                     if (timeLeft <= 0) {
-                        timeLeft = intervalDuration / 1000; // Reset time
+                        // Reinicia o tempo quando o intervalo terminar
+                        timeLeft = intervalDuration;
                         progressBar.style.width = '100%';
+                    } else {
+                        const percentage = (timeLeft / intervalDuration) * 100;
+                        progressBar.style.width = `${percentage}%`;
                     }
                 }
             }
 
+            // Limpa qualquer intervalo anterior antes de iniciar um novo
+            clearInterval(progressIntervalId);
             progressIntervalId = setInterval(update, updateInterval);
         }
 
