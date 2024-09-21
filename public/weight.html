@@ -18,50 +18,68 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f0f0f0;
+            background-color: #e0e0e0;
+            /* Cor de fundo mais suave */
             font-family: Arial, sans-serif;
         }
 
         .container {
             text-align: center;
             background-color: #fff;
-            padding: 20px;
+            padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             width: 90vw;
-            max-width: 400px;
+            /* Mantém a largura responsiva */
+            max-width: 600px;
+            /* Aumenta a largura máxima */
+            border: 5px solid #4CAF50;
+            /* Borda verde */
         }
 
         .weight-display {
-            font-size: 3rem;
+            font-size: 4rem;
+            /* Aumenta o tamanho da fonte */
             font-weight: bold;
             margin: 20px 0;
             padding: 20px;
-            border: 2px solid #4CAF50;
+            border: 3px solid #4CAF50;
             border-radius: 10px;
             background-color: #e7f9e7;
             color: #4CAF50;
+            transition: transform 0.2s;
+            /* Animação ao atualizar */
         }
 
-        .footer {
-            font-size: 0.9rem;
-            color: #666;
+        .weight-display:hover {
+            transform: scale(1.05);
+            /* Efeito de hover */
         }
 
         .history {
             margin-top: 20px;
             text-align: center;
-            /* Centraliza o texto */
-            font-size: 1.2rem;
+            font-size: 1.5rem;
+            /* Aumenta o tamanho da fonte do histórico */
+            color: #333;
+            /* Cor mais escura para melhor contraste */
         }
 
         .history-entry {
             list-style: none;
-            /* Remove o marcador da lista */
             margin: 0;
-            /* Remove margem */
             padding: 0;
-            /* Remove preenchimento */
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        h3 {
+            margin-top: 20px;
+            color: #666;
         }
     </style>
 </head>
@@ -70,10 +88,7 @@
     <div class="container">
         <h1>Painel da Balança</h1>
         <div class="weight-display">
-            <h2 id="weight">Aguardando peso...</h2>
-        </div>
-        <div class="footer">
-            <p>Atualizado em: <span id="timestamp">--:--</span></p>
+            <h2 id="weight">-- kg</h2>
         </div>
         <div class="history">
             <h3>Última Pesagem:</h3>
@@ -89,17 +104,13 @@
         let previousWeight = "Nenhuma pesagem registrada."; // Armazena a última pesagem
 
         socket.on('updateWeight', (data) => {
-            const now = new Date();
-            const currentWeightEntry = `Peso: ${data.weight} kg - ${now.toLocaleTimeString()}`;
+            const currentWeightEntry = `${data.weight} kg`;
 
             // Atualiza a última pesagem no histórico antes de atualizar o peso atual
             document.getElementById('lastWeight').innerText = previousWeight;
 
             // Atualiza o peso atual no painel
             document.getElementById('weight').innerText = currentWeightEntry;
-
-            // Atualiza o timestamp
-            document.getElementById('timestamp').innerText = now.toLocaleTimeString();
 
             // Armazena o peso atual como a última pesagem para a próxima atualização
             previousWeight = currentWeightEntry;

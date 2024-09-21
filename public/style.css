@@ -13,7 +13,7 @@ body {
 }
 
 #square {
-    background-image: url("background.png");
+    background-image: url("foto_grama.jpg");
     width: 600px;
     height: 600px;
     border: 2px solid black;
@@ -25,9 +25,9 @@ body {
 }
 
 .cow {
-    width: 30px;
-    height: 20px;
-    background-image: url("cow.svg");
+    width: 70px;
+    height: 70px;
+    background-image: url("foto_vaca.png");
     background-position: center;
     background-size: 100%;
     border-radius: 50%;
