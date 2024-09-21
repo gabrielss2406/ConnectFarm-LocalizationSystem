@@ -19,93 +19,100 @@
             align-items: center;
             height: 100vh;
             background-color: #121212;
-            /* Cor de fundo escuro */
             font-family: Arial, sans-serif;
             transition: background-color 0.3s;
-            /* Transição suave */
         }
 
         .container {
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             background-color: #1e1e1e;
-            /* Cor de fundo da caixa */
-            padding: 30px;
+            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            width: 90vw;
+            width: 95vw;
             max-width: 600px;
             border: 5px solid #4CAF50;
-            /* Borda verde */
             transition: background-color 0.3s;
-            /* Transição suave */
+        }
+
+        .display-section {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            gap: 10px;
         }
 
         .weight-display {
-            font-size: 4rem;
+            font-size: 3rem;
             font-weight: bold;
-            margin: 20px 0;
-            padding: 20px;
+            padding: 15px;
             border: 3px solid #4CAF50;
             border-radius: 10px;
             background-color: #2e2e2e;
-            /* Fundo mais escuro para o peso */
             color: #4CAF50;
-            /* Texto verde */
+            flex: 3;
+            text-align: center;
             transition: transform 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .weight-display:hover {
             transform: scale(1.05);
         }
 
-        .history {
-            margin-top: 20px;
-            text-align: center;
+        .number-display {
             font-size: 1.5rem;
+            color: #ccc;
+            flex: 1;
+            text-align: center;
+        }
+
+        .history {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 1.3rem;
             color: #fff;
-            /* Texto branco para melhor contraste */
+            width: 100%;
         }
 
         .history-entry {
             list-style: none;
-            margin: 0;
-            padding: 0;
-            background-color: #333;
-            /* Fundo das entradas do histórico */
+            margin: 5px 0;
             padding: 10px;
+            background-color: #333;
             border-radius: 5px;
             color: #fff;
-            /* Texto branco */
         }
 
         h1 {
-            font-size: 2rem;
-            margin-bottom: 20px;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
             color: #fff;
-            /* Título branco */
         }
 
         h3 {
-            margin-top: 20px;
+            margin-top: 10px;
             color: #ccc;
-            /* Cor do subtítulo mais clara */
         }
 
         .toggle-button {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 10px;
+            right: 10px;
             background-color: #4CAF50;
-            /* Cor do botão */
             color: white;
             border: none;
             border-radius: 5px;
-            padding: 10px;
+            padding: 8px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
 
-        /* Estilos para o modo claro */
         .light-mode {
             background-color: #f0f0f0;
         }
@@ -113,27 +120,48 @@
         .light-mode .container {
             background-color: #fff;
             border: 5px solid #4CAF50;
-            /* Borda verde */
         }
 
         .light-mode .weight-display {
             background-color: #e7f9e7;
-            /* Fundo claro para o peso */
             color: #4CAF50;
-            /* Texto verde */
+        }
+
+        .light-mode .number-display {
+            color: #333;
         }
 
         .light-mode .history-entry {
             background-color: #e0e0e0;
-            /* Fundo claro das entradas do histórico */
             color: #333;
-            /* Texto escuro */
         }
 
         .light-mode h1,
         .light-mode h3 {
             color: #333;
-            /* Texto escuro no modo claro */
+        }
+
+        @media (max-width: 600px) {
+            .weight-display {
+                font-size: 2.5rem;
+            }
+
+            .number-display {
+                font-size: 1.2rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .history {
+                font-size: 1.2rem;
+            }
+
+            .toggle-button {
+                font-size: 0.8rem;
+                padding: 6px;
+            }
         }
     </style>
 </head>
@@ -142,8 +170,13 @@
     <button class="toggle-button" id="toggleButton">Modo Claro</button>
     <div class="container" id="container">
         <h1>Painel da Balança</h1>
-        <div class="weight-display">
-            <h2 id="weight">-- kg</h2>
+        <div class="display-section">
+            <div class="weight-display">
+                <h2 id="weight">-- kg</h2>
+            </div>
+            <div class="number-display" id="currentNumber">
+                Vaca nº --
+            </div>
         </div>
         <div class="history">
             <h3>Última Pesagem:</h3>
@@ -156,16 +189,18 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let previousWeight = "Nenhuma pesagem registrada."; // Armazena a última pesagem
+        let previousWeight = "Nenhuma pesagem registrada.";
 
         socket.on('updateWeight', (data) => {
             const currentWeightEntry = `${data.weight} kg`;
+            const currentNumberEntry = `Vaca nº ${data.number}`;
 
             // Atualiza a última pesagem no histórico antes de atualizar o peso atual
             document.getElementById('lastWeight').innerText = previousWeight;
 
-            // Atualiza o peso atual no painel
+            // Atualiza o peso e o número da vaca atuais no painel
             document.getElementById('weight').innerText = currentWeightEntry;
+            document.getElementById('currentNumber').innerText = currentNumberEntry;
 
             // Armazena o peso atual como a última pesagem para a próxima atualização
             previousWeight = currentWeightEntry;
