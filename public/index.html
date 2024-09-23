@@ -130,6 +130,7 @@
         }
 
         function sendLocation() {
+            // Enviar localização das vacas na simulação
             document.querySelectorAll('.cow').forEach(cow => {
                 const x = parseFloat(cow.style.left);
                 const y = parseFloat(cow.style.top);
@@ -160,6 +161,41 @@
                     console.error('Error:', error);
                 });
             });
+
+            // Enviar localização da vaca com base na posição do dispositivo
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const cowId = 999; // ID fictício para a vaca do dispositivo
+                    const utcTimestamp = new Date().toISOString();
+                    const timezoneOffsetMinutes = -3 * 60;
+                    const localTimestamp = convertUTCToTimezone(utcTimestamp, timezoneOffsetMinutes);
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    fetch('/api/locations', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            farmId: "f721300f-f6a9-4d70-b343-82487d070be1",
+                            cowId: cowId,
+                            latitude: lat,
+                            longitude: lng,
+                            timestamp: localTimestamp
+                        }),
+                    }).then(response => {
+                        console.log(response)
+                        if (!response.ok) {
+                            console.error('Failed to send location of device-based cow');
+                        }
+                    }).catch(error => {
+                        console.error('Error sending device location:', error);
+                    });
+                }, (error) => {
+                    console.error('Error getting device location:', error);
+                });
+            }
         }
 
         function updateProgressBar() {
